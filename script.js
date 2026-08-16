@@ -1,84 +1,69 @@
-// ---------------------- DOM Loaded ----------------------
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded',()=>{
+  const header=document.getElementById('site-header');
+  const progress=document.getElementById('scroll-progress-bar');
+  const navToggle=document.querySelector('.nav-toggle');
+  const nav=document.getElementById('main-nav');
+  const form=document.getElementById('mini-registration');
+  const formNote=document.getElementById('form-note');
+  const year=document.getElementById('year');
 
-  // ---------- Header Entrance Animation ----------
-  const header = document.querySelector('.site-header');
-  setTimeout(() => header.classList.add('visible'), 140);
+  if(year) year.textContent=new Date().getFullYear();
 
-  // Optional: Preload hero background for smoother paint
-  const hero = document.querySelector('.hero');
-  if (hero) {
-    const img = new Image();
-    img.src = getComputedStyle(hero).backgroundImage.replace(/url\(["']?(.+)["']?\)/, '$1');
-    img.onload = () => hero.classList.add('bg-loaded'); // style .bg-loaded in CSS if needed
-  }
+  const onScroll=()=>{
+    const max=document.documentElement.scrollHeight-window.innerHeight;
+    progress.style.width=max>0?`${(window.scrollY/max)*100}%`:'0%';
+    header.classList.toggle('scrolled',window.scrollY>40);
+  };
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
 
-  // ---------- Animated Counters ----------
-  const counters = document.querySelectorAll('.stat');
-
-  counters.forEach(counter => {
-    const target = +counter.getAttribute('data-target');
-    let count = 0;
-
-    const updateCount = () => {
-      const increment = target / 200; // animation speed
-      if (count < target) {
-        count += increment;
-        counter.innerText = Math.floor(count);
-        requestAnimationFrame(updateCount);
-      } else {
-        // format special numbers
-        if (target === 70000000) counter.innerText = "70M+";
-        else if (target === 30) counter.innerText = "30%";
-        else counter.innerText = target;
-      }
-    };
-
-    // Animate only when scrolled into view
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          updateCount();
-          observer.unobserve(counter); // animate once
-        }
-      });
-    }, { threshold: 0.5 });
-
-    observer.observe(counter);
+  navToggle?.addEventListener('click',()=>{
+    const open=nav.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded',String(open));
   });
+  nav?.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{
+    nav.classList.remove('open');
+    navToggle?.setAttribute('aria-expanded','false');
+  }));
 
-  // ---------- Sectional Reveal on Scroll ----------
-  const revealElements = document.querySelectorAll('.reveal');
-
-  const revealOnScroll = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        // Add staggered delay for siblings (like cards)
-        const parent = entry.target.parentElement;
-        if (parent) {
-          const children = [...parent.querySelectorAll('.reveal')];
-          children.forEach((child, index) => {
-            if (!child.classList.contains('active')) {
-              child.style.transitionDelay = `${index * 0.15}s`;
-            }
-          });
-        }
+  const revealObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
         entry.target.classList.add('active');
-        revealOnScroll.unobserve(entry.target); // animate only once
+        revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.3 });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
 
-  revealElements.forEach(el => revealOnScroll.observe(el));
-
-  // ---------- Registration Form Redirect ----------
-  const miniForm = document.getElementById('mini-registration');
-  if (miniForm) {
-    miniForm.addEventListener('submit', (e) => {
-      e.preventDefault(); // prevent default form submission
-      const formLink = "https://docs.google.com/forms/d/e/1FAIpQLSfWJzjauPd7oB-5D2od1ztnIsNEOAvrjZ11KawpM_9_WaOQRQ/viewform";
-      window.open(formLink, "_blank"); // open Google Form in new tab
+  const counters=document.querySelectorAll('.stat[data-target]');
+  const counterObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+      const el=entry.target,target=Number(el.dataset.target),duration=1500,start=performance.now();
+      const format=n=>{
+        if(target===70000000)return `${Math.floor(n/1000000)}M+`;
+        if(target===30)return `${Math.floor(n)}`;
+        return `${Math.floor(n)}`;
+      };
+      const tick=now=>{
+        const progress=Math.min((now-start)/duration,1);
+        const eased=1-Math.pow(1-progress,3);
+        el.firstChild.nodeValue=format(target*eased);
+        if(progress<1)requestAnimationFrame(tick); else el.firstChild.nodeValue=format(target);
+      };
+      requestAnimationFrame(tick);counterObserver.unobserve(el);
     });
-  }
+  },{threshold:.45});
+  counters.forEach(el=>counterObserver.observe(el));
 
+  const formLink='https://docs.google.com/forms/d/e/1FAIpQLSfWJzjauPd7oB-5D2od1ztnIsNEOAvrjZ11KawpM_9_WaOQRQ/viewform';
+  form?.addEventListener('submit',e=>{
+    e.preventDefault();
+    const data=new FormData(form);
+    const params=new URLSearchParams();
+    for(const [key,value] of data.entries())params.set(key,value);
+    formNote.textContent='Opening the official registration form…';
+    window.open(`${formLink}${params.toString()?'?'+params.toString():''}`,'_blank','noopener');
+  });
 });
