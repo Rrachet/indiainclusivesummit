@@ -2,7 +2,7 @@ const A={hero:'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=fo
 const load=s=>new Promise((ok,no)=>{const x=document.createElement('script');x.src=s;x.onload=ok;x.onerror=no;document.head.appendChild(x)});
 const app=document.querySelector('#app');
 app.innerHTML=`
-<div class="loader"><div><b>TRIUMPHS OF TALENT</b><strong>PRESENTS</strong><h2>INDIA <i>INCLUSIVE</i><br>SUMMIT</h2><span></span></div></div>
+<div class="loader" id="loader"><div><b>TRIUMPHS OF TALENT</b><strong>PRESENTS</strong><h2>INDIA <i>INCLUSIVE</i><br>SUMMIT</h2><span></span></div></div>
 <div class="cursor"></div><div class="progress"></div>
 <header><a class="logo" href="#home"><small>TRIUMPHS OF TALENT</small><b>PRESENTS</b><strong>INDIA INCLUSIVE SUMMIT</strong></a><button class="menu" aria-label="Open menu">☰</button><nav><a href="#home">Home</a><a href="#why">Why this summit</a><a href="#register">Register</a></nav></header>
 <main>
@@ -10,7 +10,35 @@ app.innerHTML=`
 <section class="why" id="why"><div class="why-intro reveal"><small>02 / WHY THIS SUMMIT</small><h2>Inclusion needs<br><em>action.</em></h2><p>India has extraordinary talent. The summit exists to connect lived experience with the leaders, organisations and innovators who can remove barriers — and turn that connection into action.</p></div><div class="why-track"><article><b>01</b><small>THE GAP</small><h3>Awareness is only the beginning.</h3><p>Move from “why inclusion matters” to “what are we changing next?”</p></article><article class="photo" style="--bg:url('${A.people}')"><div></div><b>02</b><small>THE PEOPLE</small><h3>Put lived experience in the room.</h3><p>Better decisions happen when the people affected by them help shape them.</p></article><article class="aqua"><b>03</b><small>THE EXPERIENCE</small><h3>Think. Feel. Connect. Act.</h3><p>Keynotes, fireside conversations, inclusive labs and immersive experiences create one connected journey.</p></article><article class="photo" style="--bg:url('${A.stage}')"><div></div><b>04</b><small>THE OUTCOME</small><h3>Leave with a reason to act.</h3><p>Relationships, ideas and commitments that continue long after the room empties.</p></article></div><div class="experience-strip"><span>KEYNOTES</span><span>FIRESIDE CHATS</span><span>INCLUSIVE LABS</span><span>IMMERSIVE ZONE</span><span>RECOGNITION</span></div></section>
 <section class="register" id="register"><div class="register-image"></div><div class="register-panel reveal"><small>03 / REGISTER YOUR INTEREST</small><h2>Be in the room<br>when inclusion<br><em>moves forward.</em></h2><p>Register your interest for summit updates, participation announcements and official registration details.</p><form id="interest"><input required name="name" placeholder="Full name"><input required type="email" name="email" placeholder="Work email"><input required name="phone" placeholder="Phone number"><button class="btn primary" type="submit">Register your interest ↗</button></form><span id="status">You’ll continue to the official registration form.</span></div></section>
 </main><footer><span>TRIUMPHS OF TALENT × INDIA INCLUSIVE SUMMIT</span><span>© ${new Date().getFullYear()}</span></footer>`;
-const nav=document.querySelector('nav');document.querySelector('.menu').onclick=()=>nav.classList.toggle('open');nav.querySelectorAll('a').forEach(a=>a.onclick=()=>nav.classList.remove('open'));
+
+const loader=document.querySelector('#loader');
+const closeLoader=()=>{if(!loader)return;loader.classList.add('loaded');setTimeout(()=>loader.remove(),900)};
+// Never let a third-party animation CDN prevent the actual website from appearing.
+setTimeout(closeLoader,2200);
+const nav=document.querySelector('nav');
+document.querySelector('.menu').onclick=()=>nav.classList.toggle('open');
+nav.querySelectorAll('a').forEach(a=>a.onclick=()=>nav.classList.remove('open'));
 document.querySelector('#interest').onsubmit=e=>{e.preventDefault();document.querySelector('#status').textContent='Opening official registration…';window.open('https://docs.google.com/forms/d/e/1FAIpQLSfWJzjauPd7oB-5D2od1ztnIsNEOAvrjZ11KawpM_9_WaOQRQ/viewform','_blank','noopener')};
 function revealFallback(){const o=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');o.unobserve(e.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(x=>o.observe(x))}revealFallback();
-async function motion(){if(matchMedia('(prefers-reduced-motion:reduce)').matches){document.querySelector('.loader').style.display='none';return}try{await load('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js');await load('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js');await load('https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js')}catch(e){return}gsap.registerPlugin(ScrollTrigger);const l=new Lenis({duration:1.1,smoothWheel:true});l.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>l.raf(t*1000));gsap.to('.loader',{yPercent:-100,duration:1.1,delay:.9,ease:'power4.inOut'});gsap.from('.home-copy>*',{y:70,opacity:0,stagger:.1,duration:.9,delay:1,ease:'power4.out'});gsap.to('.home img',{scale:1.15,yPercent:8,ease:'none',scrollTrigger:{trigger:'.home',start:'top top',end:'bottom top',scrub:true}});gsap.from('.why-intro',{y:80,opacity:0,scrollTrigger:{trigger:'.why-intro',start:'top 80%',once:true}});const track=document.querySelector('.why-track');if(innerWidth>760)gsap.to(track,{x:()=>-(track.scrollWidth-innerWidth),ease:'none',scrollTrigger:{trigger:'.why-track',pin:true,scrub:1,start:'top top',end:()=>'+='+(track.scrollWidth-innerWidth)}});gsap.utils.toArray('.why-track article').forEach((x,i)=>gsap.from(x,{scale:.9,opacity:.4,duration:.8,scrollTrigger:{trigger:x,start:'left 80%'}}));gsap.from('.experience-strip span',{y:30,opacity:0,stagger:.08,scrollTrigger:{trigger:'.experience-strip',start:'top 85%',once:true}});gsap.from('.register-panel',{y:80,opacity:0,scale:.96,scrollTrigger:{trigger:'.register-panel',start:'top 80%',once:true}});addEventListener('pointermove',e=>gsap.to('.cursor',{x:e.clientX,y:e.clientY,duration:.3}));addEventListener('scroll',()=>{const max=document.documentElement.scrollHeight-innerHeight;document.querySelector('.progress').style.width=max>0?(scrollY/max*100)+'%':'0%'});gsap.utils.toArray('.btn').forEach(b=>b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.08,y:(e.clientY-r.top-r.height/2)*.08,duration:.2})}));gsap.utils.toArray('.btn').forEach(b=>b.addEventListener('pointerleave',()=>gsap.to(b,{x:0,y:0,duration:.4,ease:'elastic.out(1,.4)'})))}motion();
+async function motion(){
+ if(matchMedia('(prefers-reduced-motion:reduce)').matches){closeLoader();return}
+ try{await load('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js');await load('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js');await load('https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/bundled/lenis.min.js')}
+ catch(e){closeLoader();return}
+ gsap.registerPlugin(ScrollTrigger);
+ const l=window.Lenis?new Lenis({duration:1.1,smoothWheel:true}):null;
+ if(l){l.on('scroll',ScrollTrigger.update);gsap.ticker.add(t=>l.raf(t*1000))}
+ gsap.to(loader,{yPercent:-100,duration:1.1,delay:.55,ease:'power4.inOut',onComplete:closeLoader});
+ gsap.from('.home-copy>*',{y:70,opacity:0,stagger:.1,duration:.9,delay:.75,ease:'power4.out'});
+ gsap.to('.home img',{scale:1.15,yPercent:8,ease:'none',scrollTrigger:{trigger:'.home',start:'top top',end:'bottom top',scrub:true}});
+ gsap.from('.why-intro',{y:80,opacity:0,scrollTrigger:{trigger:'.why-intro',start:'top 80%',once:true}});
+ const track=document.querySelector('.why-track');
+ if(innerWidth>760){gsap.to(track,{x:()=>-(track.scrollWidth-innerWidth),ease:'none',scrollTrigger:{trigger:'.why-track',pin:true,scrub:1,start:'top top',end:()=>'+='+(track.scrollWidth-innerWidth),invalidateOnRefresh:true}})}
+ gsap.utils.toArray('.why-track article').forEach(x=>gsap.from(x,{scale:.94,opacity:.55,duration:.8,scrollTrigger:{trigger:x,start:'left 80%'}}));
+ gsap.from('.experience-strip span',{y:30,opacity:0,stagger:.08,scrollTrigger:{trigger:'.experience-strip',start:'top 85%',once:true}});
+ gsap.from('.register-panel',{y:80,opacity:0,scale:.96,scrollTrigger:{trigger:'.register-panel',start:'top 80%',once:true}});
+ addEventListener('pointermove',e=>gsap.to('.cursor',{x:e.clientX,y:e.clientY,duration:.3}));
+ const updateProgress=()=>{const max=document.documentElement.scrollHeight-innerHeight;document.querySelector('.progress').style.width=max>0?(scrollY/max*100)+'%':'0%'};addEventListener('scroll',updateProgress,{passive:true});updateProgress();
+ gsap.utils.toArray('.btn').forEach(b=>{b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.08,y:(e.clientY-r.top-r.height/2)*.08,duration:.2})});b.addEventListener('pointerleave',()=>gsap.to(b,{x:0,y:0,duration:.4,ease:'elastic.out(1,.4)'}))});
+ setTimeout(()=>ScrollTrigger.refresh(),100);
+}
+motion();
